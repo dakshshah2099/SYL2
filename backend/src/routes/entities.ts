@@ -1,9 +1,8 @@
 import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../db';
 import { authenticate } from '../middleware/authMiddleware';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // GET /api/entities - Get all entities for the user
 router.get('/', authenticate, async (req: any, res) => {

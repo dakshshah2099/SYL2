@@ -1,9 +1,8 @@
 import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../db';
 import { authenticate } from '../middleware/authMiddleware';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // GET /services - List all active service providers
 router.get('/', async (req, res) => {

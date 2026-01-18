@@ -1,11 +1,9 @@
-
 import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../db';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { authenticate } from '../middleware/authMiddleware';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // Initialize Gemini
 // Note: This requires GOOGLE_API_KEY in .env
