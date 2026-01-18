@@ -1,0 +1,12 @@
+{
+  "name": "project-root",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "echo 'Run dev in distinct workspaces'",
+    "build": "echo 'No root build script'"
+  }
+}
