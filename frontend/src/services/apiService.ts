@@ -1,5 +1,5 @@
 const PORTS = [3000, 3001, 3002, 3003, 3004, 3005];
-let API_URL = 'http://localhost:3000/api'; // Default
+let API_URL = '/api'; // Default for production (Relative path)
 
 // Helper to check if a backend is alive
 const checkHealth = async (port: number) => {
@@ -28,13 +28,20 @@ const getHeaders = () => {
 export const apiService = {
     // Call this on app start
     initialize: async () => {
-        for (const port of PORTS) {
-            if (await checkHealth(port)) {
-                API_URL = `http://localhost:${port}/api`;
-                return;
+        // Only run localhost checks in Development
+        if (import.meta.env.DEV) {
+            API_URL = 'http://localhost:3000/api'; // Default Dev
+            for (const port of PORTS) {
+                if (await checkHealth(port)) {
+                    API_URL = `http://localhost:${port}/api`;
+                    console.log(`[API] Connected to backend on port ${port}`);
+                    return;
+                }
             }
+            console.error("No backend found on ports 3000-3005");
+        } else {
+            console.log("[API] Production mode: Using relative /api path");
         }
-        console.error("No backend found on ports 3000-3005");
     },
 
     auth: {
