@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  phone     String?  @unique
+  email     String?  @unique // Added for Org Login
+  serviceId String?  @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  otp          String?
+  otpExpiresAt DateTime?
+
+  entities  Entity[]
+  sessions  Session[]
+
+  // Security Tracking
+  lastLogin           DateTime?
+  lastLoginLocation   String?
+  failedLoginAttempts Int       @default(0)
+  lastFailedLogin     DateTime?
+  passwordChangedAt   DateTime? @default(now())
+  
+  settings          Json?     // Stores { theme, notifications, etc. }
+}
+
+model OrgRegistrationRequest {
+  id                 String   @id @default(uuid())
+  name               String
+  email              String   @unique
+  registrationNumber String
+  jurisdiction       String
+  address            String
+  status             String   @default("pending") // pending, approved, rejected
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Entity {
+  id                 String   @id // Custom ID like DID-2024...
+  userId             String
+  type               String   // INDIVIDUAL, ORG, GOVT
+  name               String
+  registrationNumber String?
+  jurisdiction       String?
+  uniqueId           String?  @unique // Global constraint for Identity ID (Aadhar/PAN)
+  verified           Boolean  @default(false)
+  
+  // JSON for flexible attributes (DOB, Land Holding, etc.)
+  details            Json?    
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user               User     @relation(fields: [userId], references: [id])
+  consents           Consent[]
+  alerts             SecurityAlert[]
+  accessLogs         AccessLog[]
+  serviceProvider    ServiceProvider?
+}
+
+model Session {
+  id         String   @id
+  userId     String
+  device     String
+  browser    String
+  os         String
+  location   String?
+  ip         String?
+  lastActive DateTime @default(now())
+  isCurrent  Boolean  @default(false) 
+  token      String?  @db.Text // For API authentication
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Consent {
+  id          String   @id @default(uuid())
+  entityId    String   // The User's Entity (Grantor)
+  requesterId String?  // The Org/Govt Entity (Requestor)
+  serviceName String
+  entityType  String?
+  purpose     String
+  status      String   // pending, active, revoked, rejected, expired
+  grantedOn   DateTime? @default(now())
+  expiresOn   DateTime?
+  verified    Boolean  @default(false)
+
+  attributes  Json     // Array of strings (Requested or Granted)
+
+  entity      Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
+}
+
+model SecurityAlert {
+  id           String   @id @default(uuid())
+  entityId     String
+  type         String   // warning, error, info
+  title        String
+  message      String
+  timestamp    DateTime @default(now())
+  acknowledged Boolean  @default(false)
+
+  entity       Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
+}
+
+model AccessLog {
+  id          String   @id @default(uuid())
+  entityId    String
+  service     String
+  entityType  String?
+  purpose     String
+  status      String
+  timestamp   DateTime @default(now())
+  
+  attributes  Json
+
+  entity      Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
+}
+
+model ServiceProvider {
+  id          String   @id @default(uuid())
+  entityId    String   @unique // One provider profile per entity
+  name        String
+  description String   @db.Text
+  category    String   // FINANCE, HEALTH, GOVT, UTILITY, OTHER
+  icon        String?  // URL or icon name
+  website     String?
+  contactEmail String?
+  
+  verified    Boolean  @default(false)
+  active      Boolean  @default(true)
+  
+  // Government Mandate Flags
+  isGovernmentService Boolean @default(false)
+  globalMandate       GlobalMandate?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  entity      Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
+}
+
+model GlobalMandate {
+  id                String          @id @default(uuid())
+  serviceProviderId String          @unique
+  attributes        Json            // Array of allowed attributes
+  reason            String          // Justification
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  serviceProvider   ServiceProvider @relation(fields: [serviceProviderId], references: [id], onDelete: Cascade)
+}
