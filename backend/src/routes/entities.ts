@@ -13,7 +13,7 @@ router.get('/', authenticate, async (req: any, res) => {
         });
 
         // Transform for frontend if needed (e.g., parse details JSON)
-        const formatted = entities.map(e => ({
+        const formatted = entities.map((e: any) => ({
             ...e,
             ...(e.details as object) // Spread details JSON into top level if frontend expects it
         }));
@@ -125,7 +125,7 @@ router.get('/sessions', authenticate, async (req: any, res) => {
         });
 
         // Dynamic check for current session based on token
-        const sessionsWithCurrent = sessions.map(s => ({
+        const sessionsWithCurrent = sessions.map((s: any) => ({
             ...s,
             current: s.token === req.token // Ensure logic matches exact token
         }));

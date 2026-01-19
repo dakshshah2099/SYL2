@@ -49,10 +49,10 @@ router.post('/chat', authenticate, async (req: any, res) => {
         - Pending Org Requests: ${pendingOrgs}
 
         Recent Audit Logs (Access Requests):
-        ${recentLogs.map(l => `- [${l.timestamp.toISOString()}] ${l.entity.name} (${l.entity.type})accessed ${l.service} for "${l.purpose}". Status: ${l.status}`).join('\n')}
+        ${recentLogs.map((l: any) => `- [${l.timestamp.toISOString()}] ${l.entity.name} (${l.entity.type})accessed ${l.service} for "${l.purpose}". Status: ${l.status}`).join('\n')}
 
         Recent Security Alerts (Potential Threats):
-        ${recentAlerts.map(a => `- [${a.timestamp.toISOString()}] ALERT: ${a.title} - ${a.message} (Entity: ${a.entity.name})`).join('\n')}
+        ${recentAlerts.map((a: any) => `- [${a.timestamp.toISOString()}] ALERT: ${a.title} - ${a.message} (Entity: ${a.entity.name})`).join('\n')}
         `;
 
         const prompt = `
