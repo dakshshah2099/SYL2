@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -7,18 +8,23 @@ async function main() {
 
     const serviceId = "GOVT-ADMIN";
     const password = "admin123";
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Check if exists
     const existing = await prisma.user.findUnique({ where: { serviceId } });
     if (existing) {
-        console.log("Govt user already exists.");
+        console.log("Govt user exists. Updating password...");
+        await prisma.user.update({
+            where: { serviceId },
+            data: { password: hashedPassword }
+        });
         return;
     }
 
     const newUser = await prisma.user.create({
         data: {
             serviceId,
-            password
+            password: hashedPassword
         }
     });
 

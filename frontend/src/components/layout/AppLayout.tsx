@@ -59,8 +59,8 @@ export function AppLayout({ children }: AppLayoutProps) {
       if (item.name === "Organizations") return true;
       if (item.name === "Identity Overview") return true;
 
-      // Hide others for now to keep it clean, or keep Security?
-      if (["Consent Center", "Access Transparency", "Verified Service Providers", "Settings"].includes(item.name)) return false;
+      // Hide others for now to keep it clean
+      if (["Access Transparency", "Verified Service Providers", "Settings"].includes(item.name)) return false;
 
       return true;
     } else {
